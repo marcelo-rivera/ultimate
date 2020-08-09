@@ -1,7 +1,7 @@
 var emitirNFce = false;
 var cpfNota = '';
 var path = window.location.protocol + '//' + window.location.host
-
+var TOTAL = 0;
 $(document).ready(function() {
     customer_set = false;
     //Prevent enter key function except texarea
@@ -611,7 +611,6 @@ $(document).ready(function() {
         } else {
             // 
 
-            emitirNFce= true;
             swal({
                 title: 'Valor recebido?',
                 text: 'Ultiliza ponto(.) ao invés de virgula!',
@@ -623,28 +622,29 @@ $(document).ready(function() {
                 }
             }).then(v => {
                 $('#valor_recebido').val(v)
+                if(v && v > 0 && v >= TOTAL){
 
-                swal({
-                    title: 'Emitir NFc-e?',
-                    icon: 'success',
-                    buttons: ["Somente finalizar", "Sim"],
-                }).then(sim => {
-                    if (sim) {
+                    swal({
+                        title: 'Emitir NFc-e?',
+                        icon: 'success',
+                        buttons: ["Somente finalizar", "Sim"],
+                    }).then(sim => {
+                        if (sim) {
 
-                        emitirNFce= true;
-                        swal({
-                            title: 'CPF na Nota?',
-                            text: 'Somente números(Opcional)',
-                            content: "input",
-                            button: {
-                                text: "Transmitir!",
-                                closeModal: false,
-                                type: 'error'
-                            }
-                        }).then(v => {
-                            $('#cpf').val(v)
-                            cpfNota = v;
-                            pos_form_obj.submit();
+                            emitirNFce= true;
+                            swal({
+                                title: 'CPF na Nota?',
+                                text: 'Somente números(Opcional)',
+                                content: "input",
+                                button: {
+                                    text: "Transmitir!",
+                                    closeModal: false,
+                                    type: 'error'
+                                }
+                            }).then(v => {
+                                $('#cpf').val(v)
+                                cpfNota = v;
+                                pos_form_obj.submit();
                             // swal.stopLoading();
                             // swal.close();
 
@@ -652,10 +652,16 @@ $(document).ready(function() {
                         });
 
 
-                    } else {
-                     pos_form_obj.submit();
-                 }
-             });
+                        } else {
+                            pos_form_obj.submit();
+                        }
+                    });
+                }else{
+                    swal({
+                        title: 'Informe um valor recebido maior que a soma de produtos!',
+                        icon: 'error',
+                    })
+                }
 
             });
             
@@ -683,7 +689,38 @@ $(document).ready(function() {
         $('input#card_security_0').val($('#card_security').val());
 
         $('div#card_details_modal').modal('hide');
-        pos_form_obj.submit();
+
+        swal({
+            title: 'Emitir NFc-e?',
+            icon: 'success',
+            buttons: ["Somente finalizar", "Sim"],
+        }).then(sim => {
+            if (sim) {
+
+                emitirNFce= true;
+                swal({
+                    title: 'CPF na Nota?',
+                    text: 'Somente números(Opcional)',
+                    content: "input",
+                    button: {
+                        text: "Transmitir!",
+                        closeModal: false,
+                        type: 'error'
+                    }
+                }).then(v => {
+                    $('#cpf').val(v)
+                    cpfNota = v;
+                    pos_form_obj.submit();
+                            // swal.stopLoading();
+                            // swal.close();
+
+                        });
+
+            } else {
+                pos_form_obj.submit();
+            }
+        });
+
     });
 
     $('button#pos-suspend').click(function() {
@@ -782,7 +819,6 @@ $(document).ready(function() {
 
                         if (result.success == 1) {
                             $('#modal_payment').modal('hide');
-                            toastr.success(result.msg);
 
                             reset_pos_form();
 
@@ -803,14 +839,20 @@ $(document).ready(function() {
                                         dataType: 'json',
                                         success: function(e){
                                             console.log(e)
+                                            toastr.success(result.msg);
 
-                                            swal("sucesso", "Nf-e emitida, recibo: " + e, "success")
+                                            swal.stopLoading();
+                                            swal.close();
+
+                                            swal("sucesso", "NFC-e emitida, recibo: " + e, "success")
                                             .then(() => {
-                                              window.open(path + '/nfce/imprimir/'+id)
+                                              window.open(path + '/nfce/imprimir/'+result.venda_id)
                                               location.reload()
                                           });
 
                                         }, error: function(e){
+                                            swal.stopLoading();
+                                            swal.close();
                                             console.log(e)
                                             if(e.status == 402){
                                               swal("Erro ao transmitir", e.responseJSON, "error");
@@ -826,6 +868,7 @@ $(document).ready(function() {
                                       }
                                   })
                                 }else{
+                                    toastr.success(result.msg);
                                     pos_print(result.receipt);
                                 }
                             }
@@ -1724,7 +1767,7 @@ function calculate_balance_due() {
 
     __write_number($('input#in_balance_due'), bal_due);
     $('span.balance_due').text(__currency_trans_from_en(bal_due, true));
-
+    TOTAL = total_paying
     __highlight(bal_due * -1, $('span.balance_due'));
     __highlight(change_return * -1, $('span.change_return_span'));
 }

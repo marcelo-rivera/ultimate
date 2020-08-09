@@ -21,6 +21,12 @@
       <!-- Navbar Right Menu -->
       <div class="navbar-custom-menu">
 
+        <div class="m-8 pull-left mt-15 hidden-xs" style="color: #fff;">Ambiente: 
+          <strong>
+            {{auth()->user()->business->ambiente == 2 ? 'Homologação' : 'Produção'}}
+          </strong>
+        </div>
+
         @if(Module::has('Essentials'))
           @includeIf('essentials::layouts.partials.header_part')
         @endif
@@ -46,6 +52,8 @@
               <strong><i class="fa fa-th-large"></i> &nbsp; PDV</strong>
             </a>
           @endcan
+
+
         @endif
         @can('profit_loss_report.view')
           <button type="button" id="view_todays_profit" title="{{ __('home.todays_profit') }}" data-toggle="tooltip" data-placement="bottom" class="btn btn-success btn-flat pull-left m-8 hidden-xs btn-sm mt-10">

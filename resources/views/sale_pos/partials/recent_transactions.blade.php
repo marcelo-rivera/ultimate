@@ -37,6 +37,12 @@
 	    			<a href="{{action('SellPosController@printInvoice', [$transaction->id])}}" class="print-invoice-link">
 	    				<i class="fa fa-print text-muted" aria-hidden="true" title="{{__('lang_v1.click_to_print')}}"></i>
 	    			</a>
+
+	    			@if($transaction->numero_nfce > 0)
+	    			<a onclick="window.open('/nfce/imprimir/{{$transaction->id}}')" class="print-invoice-link">
+	    				<i class="fa fa-print text-success" aria-hidden="true" title="Imprimir fiscal"></i>
+	    			</a>
+	    			@endif
 				</td>
 			</tr>
 		@endforeach

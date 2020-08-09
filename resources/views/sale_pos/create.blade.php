@@ -45,6 +45,7 @@
 
 					<input type="hidden" id="cpf" value="" name="cpf">
 					<input type="hidden" id="valor_recebido" value="0" name="valor_recebido">
+					
 					<input type="hidden" id="token" value="{{csrf_token()}}">
 				@if(empty($pos_settings['hide_product_suggestion']) && !isMobile())
 				<div class="col-md-5 no-padding">

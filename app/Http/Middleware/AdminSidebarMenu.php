@@ -220,6 +220,12 @@ if (in_array('purchases', $enabled_modules) && (auth()->user()->can('purchase.vi
                     ['icon' => 'fa fas fa-undo', 'active' => request()->segment(1) == 'purchase-return']
                 );
             }
+
+            $sub->url(
+                '/purchase-xml',
+                'Importar XML',
+                ['icon' => 'fa fa-file-excel', 'active' => request()->segment(1) == 'purchase-xml']
+            );
         },
         ['icon' => 'fa fas fa-arrow-circle-down', 'id' => 'tour_step6']
     )->order(25);

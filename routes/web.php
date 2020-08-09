@@ -70,6 +70,10 @@ Route::middleware(['authh', 'auth', 'SetSessionData', 'language', 'timezone', 'A
 
         Route::get('/baixarZipXmlAprovado', 'NfeController@baixarZipXmlAprovado');
         Route::get('/baixarZipXmlReprovado', 'NfeController@baixarZipXmlReprovado');
+        Route::get('/consultaCadastro', 'NfeController@consultaCadastro');
+
+        Route::get('/findCidade', 'NfeController@findCidade');
+
 
     });
 
@@ -83,8 +87,16 @@ Route::middleware(['authh', 'auth', 'SetSessionData', 'language', 'timezone', 'A
         Route::get('/gerarXml/{id}', 'NfceController@gerarXml');
         Route::get('/renderizar/{id}', 'NfceController@renderizarDanfce');
         Route::get('/imprimir/{id}', 'NfceController@imprimir');
-        
+        Route::get('/ver/{id}', 'NfceController@ver');
+        Route::get('/baixarXml/{id}', 'NfceController@baixarXml');
+        Route::post('/cancelar', 'NfceController@cancelar');
 
+    });
+
+    Route::group(['prefix' => '/purchase-xml'], function(){
+        Route::get('/', 'PurchaseXmlController@index');
+        Route::post('/', 'PurchaseXmlController@verXml');
+        Route::post('/save', 'PurchaseXmlController@save');
     });
 
     Route::get('/home', 'HomeController@index')->name('home');

@@ -63,6 +63,9 @@ class CreateTransactionsTable extends Migration
 
             $table->integer('numero_nfe')->default(0);
             $table->integer('numero_nfce')->default(0);
+
+            $table->integer('numero_nfe_entrada')->default(0);
+
             $table->string('chave',48)->default('');
             $table->integer('sequencia_cce')->default(0);
             $table->string('cpf_nota', 15)->default('');

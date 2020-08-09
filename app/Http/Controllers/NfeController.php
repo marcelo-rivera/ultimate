@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Transaction;
 use App\Business;
+use App\City;
 use NFePHP\DA\NFe\Danfe;
 use NFePHP\DA\Legacy\FilesFolders;
 use NFePHP\DA\NFe\Daevento;
@@ -475,8 +476,6 @@ class NfeController extends Controller
 		}else{
 			return response()->json($nfe, $nfe['status']);
 		}
-		
-		
 	}
 
 	public function corrigir(Request $request){
@@ -617,6 +616,55 @@ class NfeController extends Controller
 		$cnpj = str_replace("-", "", $cnpj);
 		$cnpj = str_replace(" ", "", $cnpj);
 		return response()->download(public_path('xml_nfe_cancelada/'.$cnpj.'/'.'xml_cancelado.zip'));
+	}
+
+	public function consultaCadastro(Request $request){
+
+		if (!auth()->user()->can('user.create')) {
+			abort(403, 'Unauthorized action.');
+		}
+
+		$business_id = request()->session()->get('user.business_id');
+		$transaction = Transaction::where('business_id', $business_id)
+		->where('id', $request->id)
+		->first();
+
+		$config = Business::find($business_id);
+		$cnpj = str_replace(".", "", $config->cnpj);
+		$cnpj = str_replace("/", "", $cnpj);
+		$cnpj = str_replace("-", "", $cnpj);
+		$cnpj = str_replace(" ", "", $cnpj);
+
+
+		$nfe_service = new NFeService([
+			"atualizacao" => date('Y-m-d h:i:s'),
+			"tpAmb" => (int)$config->ambiente,
+			"razaosocial" => $config->razao_social,
+			"siglaUF" => $config->cidade->uf,
+			"cnpj" => $cnpj,
+			"schemes" => "PL_009_V4",
+			"versao" => "4.00",
+			"tokenIBPT" => "AAAAAAA",
+			"CSC" => getenv('CSC'),
+			"CSCid" => getenv('CSCid')
+		]);
+
+		$cnpj = str_replace(".", "", $request->cnpj);
+		$cnpj = str_replace("/", "", $cnpj);
+		$cnpj = str_replace("-", "", $cnpj);
+		$cnpj = str_replace(" ", "", $cnpj);
+		$uf = $request->uf;
+
+		$nfe_service->consultaCadastro($cnpj, $uf);
+
+	}
+
+	public function findCidade(Request $request){
+		$cidade = City::
+        where('nome', $request->nome)
+        ->first();
+
+		return response()->json($cidade);
 	}
 
 }

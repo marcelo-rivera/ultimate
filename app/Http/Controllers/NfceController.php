@@ -256,5 +256,92 @@ class NfceController extends Controller
 
 	}
 
+	public function ver($id){
+		if (!auth()->user()->can('user.create')) {
+			abort(403, 'Unauthorized action.');
+		}
+
+		$business_id = request()->session()->get('user.business_id');
+		$transaction = Transaction::where('business_id', $business_id)
+		->where('id', $id)
+		->first();
+
+		$business = Business::find($business_id);
+
+		if(!$transaction){
+			abort(403, 'Unauthorized action.');
+		}
+
+		return view('nfce.ver')
+		->with(compact('transaction', 'business'));
+	}
+
+	public function baixarXml($id){
+		if (!auth()->user()->can('user.create')) {
+			abort(403, 'Unauthorized action.');
+		}
+
+		$business_id = request()->session()->get('user.business_id');
+		$transaction = Transaction::where('business_id', $business_id)
+		->where('id', $id)
+		->first();
+
+		$business = Business::find($business_id);
+		$cnpj = str_replace(".", "", $business->cnpj);
+		$cnpj = str_replace("/", "", $cnpj);
+		$cnpj = str_replace("-", "", $cnpj);
+		$cnpj = str_replace(" ", "", $cnpj);
+
+		if(!$transaction){
+			abort(403, 'Unauthorized action.');
+		}
+
+		return response()->download(public_path('xml_nfce/'.$cnpj.'/'.$transaction->chave.'.xml'));
+	}
+
+	public function cancelar(Request $request){
+
+		if (!auth()->user()->can('user.create')) {
+			abort(403, 'Unauthorized action.');
+		}
+
+		$business_id = request()->session()->get('user.business_id');
+		$transaction = Transaction::where('business_id', $business_id)
+		->where('id', $request->id)
+		->first();
+
+		$config = Business::find($business_id);
+		$cnpj = str_replace(".", "", $config->cnpj);
+		$cnpj = str_replace("/", "", $cnpj);
+		$cnpj = str_replace("-", "", $cnpj);
+		$cnpj = str_replace(" ", "", $cnpj);
+
+
+		$nfce_service = new NFCeService([
+			"atualizacao" => date('Y-m-d h:i:s'),
+			"tpAmb" => (int)$config->ambiente,
+			"razaosocial" => $config->razao_social,
+			"siglaUF" => $config->cidade->uf,
+			"cnpj" => $cnpj,
+			"schemes" => "PL_009_V4",
+			"versao" => "4.00",
+			"tokenIBPT" => "AAAAAAA",
+			"CSC" => $config->csc,
+			"CSCid" => $config->csc_id
+		]);
+
+
+		$nfe = $nfce_service->cancelar($transaction, $request->justificativa, $cnpj);
+		if(!isset($nfe['erro'])){
+
+			$transaction->estado = 'CANCELADO';
+			$transaction->save();
+			return response()->json($nfe, 200);
+
+
+		}else{
+			return response()->json($nfe, $nfe['status']);
+		}
+	}
 
 }

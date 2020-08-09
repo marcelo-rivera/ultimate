@@ -37,8 +37,6 @@ class CreateBusinessTable extends Migration
             $table->string('sku_prefix')->nullable();
             $table->boolean('enable_tooltip')->default(1);
 
-
-
             $table->string('razao_social', 120)->default('*');
             $table->string('cnpj', 20)->default('00.000.000/0000-00');
             $table->string('ie', 15)->default('00000000000');

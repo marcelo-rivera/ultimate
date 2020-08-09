@@ -113,10 +113,10 @@ class NFCeService{
 
 		// DESTINATARIO
 		
-		if(strlen($venda->cpf_nota) == 11){
-
-			$cpf = str_replace(".", "", $venda->cpf_nota);
-			$cpf = str_replace("/", "", $cpf);
+		if(strlen($venda->cpf_nota) >= 11){
+			$stdDest = new \stdClass();
+			$cpf = $venda->cpf_nota;
+			$cpf = str_replace(".", "", $cpf);
 			$cpf = str_replace("-", "", $cpf);
 			$cpf = str_replace(" ", "", $cpf);
 
@@ -382,5 +382,51 @@ class NFCeService{
 		}
 
 	}	
+
+	public function cancelar($venda, $justificativa, $cnpj){
+		try {
+
+			$chave = $venda->chave;
+			$response = $this->tools->sefazConsultaChave($chave);
+			$stdCl = new Standardize($response);
+			$arr = $stdCl->toArray();
+			sleep(1);
+				// return $arr;
+			$xJust = $justificativa;
+
+			$nProt = $arr['protNFe']['infProt']['nProt'];
+
+			$response = $this->tools->sefazCancela($chave, $xJust, $nProt);
+			sleep(2);
+			$stdCl = new Standardize($response);
+			$std = $stdCl->toStd();
+			$arr = $stdCl->toArray();
+			$json = $stdCl->toJson();
+
+			if ($std->cStat != 128) {
+
+			} else {
+				$cStat = $std->retEvento->infEvento->cStat;
+				$public = getenv('SERVIDOR_WEB') ? 'public/' : '';
+				if ($cStat == '101' || $cStat == '135' || $cStat == '155' ) {
+
+					$xml = Complements::toAuthorize($this->tools->lastRequest, $response);
+
+					if(!is_dir(public_path('xml_nfce_cancelada/'.$cnpj))){
+						mkdir(public_path('xml_nfce_cancelada/'.$cnpj), 0777, true);
+					}
+					file_put_contents(public_path('xml_nfce_cancelada/'.$cnpj.'/'.$chave.'.xml'), $xml);
+
+					return $arr;
+				} else {
+
+					return ['erro' => true, 'data' => $arr, 'status' => 402];	
+				}
+			}    
+		} catch (\Exception $e) {
+			echo $e->getMessage();
+    //TRATAR
+		}
+	}
 
 }

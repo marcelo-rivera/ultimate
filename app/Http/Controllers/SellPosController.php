@@ -245,7 +245,7 @@ class SellPosController extends Controller
             $temp[$c->id] = $c->nome . " ($c->uf)";
         }
         return $temp;
-  }
+    }
 
     /**
      * Store a newly created resource in storage.
@@ -724,6 +724,15 @@ if (!$is_direct_sale) {
         ->with(['price_group', 'types_of_service'])
         ->findorfail($id);
 
+        if($transaction->numero_nfce > 0){
+            return back()->with('status', 
+                [
+                    'success' => 0,
+                    'msg' => 'Não é possível editar uma venda com NFC-e emitida!'
+                ]
+            );
+        }
+
         $location_id = $transaction->location_id;
         $business_location = BusinessLocation::find($location_id);
         $payment_types = $this->productUtil->payment_types($business_location);
@@ -948,6 +957,8 @@ if (!$is_direct_sale) {
         $invoice_layouts = InvoiceLayout::forDropdown($business_id);
 
         return view('sale_pos.edit')
+        ->with('tipo', 'customer')
+        ->with('cities', $this->prepareCities())
         ->with(compact('business_details', 'taxes', 'payment_types', 'walk_in_customer', 'sell_details', 'transaction', 'payment_lines', 'location_printer_type', 'shortcuts', 'commission_agent', 'categories', 'pos_settings', 'change_return', 'types', 'customer_groups', 'brands', 'accounts', 'waiters', 'redeem_details', 'edit_price', 'edit_discount', 'shipping_statuses', 'warranties', 'sub_type', 'pos_module_data', 'invoice_layouts'));
     }
 

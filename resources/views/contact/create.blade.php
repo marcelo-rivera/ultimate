@@ -47,7 +47,7 @@ $users = [];
           <span class="input-group-addon">
             <i class="fa fa-user"></i>
           </span>
-          {!! Form::text('name', null, ['class' => 'form-control','placeholder' => __('contact.name'), 'required']); !!}
+          {!! Form::text('name', null, ['id' => 'name', 'class' => 'form-control','placeholder' => __('contact.name'), 'required']); !!}
         </div>
       </div>
     </div>
@@ -159,7 +159,7 @@ $users = [];
       </div>
     </div>
 
-    <div class="col-md-2 customer_fields">
+    <div class="col-md-2">
       <div class="form-group">
         {!! Form::label('tipo', 'Tipo' . ':') !!}
         <div class="input-group" style="width: 100%;">
@@ -169,14 +169,28 @@ $users = [];
       </div>
     </div>
 
-    <div class="col-md-5 customer_fields">
+    <div class="col-md-4">
       <div class="form-group">
+
         <label for="product_custom_field2">CNPJ/CPF:</label>
+
         <input class="form-control" required placeholder="CPF/CNPJ" data-mask="000.000.000-00" name="cpf_cnpj" type="text" id="cpf_cnpj">
       </div>
     </div>
 
-    <div class="col-md-4 customer_fields">
+    <div class="col-md-2">
+      <div class="form-group">
+        {!! Form::label('tipo', 'UF' . ':') !!}
+        <div class="input-group" style="width: 100%;">
+          <span class="input-group-addon">
+            <a onclick="buscaDados()"><i class="fa fa-search"></i></a>
+          </span>
+          {!! Form::select('uf', $estados, '', ['id' => 'uf', 'class' => 'form-control']); !!}
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-4">
       <div class="form-group">
         <label for="product_custom_field2">I.E/RG:</label>
         <input class="form-control" placeholder="I.E/RG" name="ie_rg" type="number" id="ie_rg">
@@ -201,7 +215,7 @@ $users = [];
     <div class="col-md-6 customer_fields">
       <div class="form-group">
         {!! Form::label('city_id', 'Cidade:*') !!}
-        {!! Form::select('city_id', $cities, '', ['class' => 'form-control select2', 'required']); !!}
+        {!! Form::select('city_id', $cities, '', ['id' => 'cidade', 'class' => 'form-control select2', 'required']); !!}
       </div>
     </div>
 
@@ -425,6 +439,74 @@ $users = [];
 
     }
   })
+
+  function buscaDados(){
+    let uf = $('#uf').val();
+    let cnpj = $('#cpf_cnpj').val();
+
+    var path = window.location.protocol + '//' + window.location.host
+    $.ajax
+    ({
+      type: 'GET',
+      data: {
+        cnpj: cnpj,
+        uf: uf
+      },
+      url: path + '/nfe/consultaCadastro',
+
+      dataType: 'json',
+      success: function(e){
+        console.log(e)
+        if(e.infCons.infCad){
+          let info = e.infCons.infCad;
+          console.log(info)
+
+          $('#ie_rg').val(info.IE)
+          $('#name').val(info.xNome)
+          $('#nome_fantasia').val(info.xFant ? info.xFant : info.xNome)
+
+          $('#rua').val(info.ender.xLgr)
+          $('#numero').val(info.ender.nro)
+          $('#bairro').val(info.ender.xBairro)
+          let cep = info.ender.CEP;
+          $('#cep').val(cep.substring(0, 5) + '-' + cep.substring(5, 9))
+
+          
+
+          findCidade(info.ender.xMun, (res) => {
+            
+            if(res){
+
+              var $option = $("<option selected></option>").val(res.id).text(res.nome + "(" + res.uf + ")");
+              $('#cidade').append($option).trigger('change');
+
+            }
+          })
+
+        }else{
+          swal('Algo deu errado', e.infCons.xMotivo, 'warning')
+        }
+      },
+      error: function(e){
+        console.log(e.responseText)
+        swal('Algo deu errado', e.responseText, 'warning')
+
+      }
+    });
+  }
+
+  function findCidade(nomeCidade, call){
+    var path = window.location.protocol + '//' + window.location.host
+    $.get(path + '/nfe/findCidade', {nome: nomeCidade} )
+    .done((success) => {
+      call(success)
+    })
+    .fail((err) => {
+      call(err)
+    })
+  }
+
+
 </script>
 </div><!-- /.modal-content -->
 </div><!-- /.modal-dialog -->
