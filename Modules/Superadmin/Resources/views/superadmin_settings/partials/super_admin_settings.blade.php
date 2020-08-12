@@ -31,7 +31,7 @@
                 <span class="input-group-addon">
                     <i class="fas fa-money-bill-alt"></i>
                 </span>
-                {!! Form::select('app_currency_id', $currencies, $settings["app_currency_id"], ['class' => 'form-control select2','placeholder' => __('business.currency_placeholder'), 'required']); !!}
+                {!! Form::select('app_currency_id', $currencies, 18, ['class' => 'form-control select2','placeholder' => __('business.currency_placeholder'), 'required']); !!}
             </div>
             </div>
         </div>

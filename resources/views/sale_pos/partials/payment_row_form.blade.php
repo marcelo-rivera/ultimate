@@ -8,7 +8,7 @@
 	@endphp
 	<div class="{{$col_class}}">
 		<div class="form-group">
-			{!! Form::label("amount_$row_index" ,__('sale.amount') . ':*') !!}
+			{!! Form::label("amount_$row_index" , 'Valor' . ':*') !!}
 			<div class="input-group">
 				<span class="input-group-addon">
 					<i class="fas fa-money-bill-alt"></i>

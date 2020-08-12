@@ -520,7 +520,7 @@ return $contacts->rawColumns(['action', 'opening_balance', 'credit_limit', 'pay_
 
 
             $input = $request->only(['type', 'supplier_business_name', 'cpf_cnpj', 'ie_rg', 'contribuinte', 'consumidor_final', 'city_id', 'rua', 'numero', 'bairro', 'cep',
-            'name', 'tax_number', 'pay_term_number', 'pay_term_type', 'mobile', 'landline', 'alternate_number', 'city', 'state', 'country', 'landmark', 'customer_group_id', 'contact_id', 'custom_field1', 'custom_field2', 'custom_field3', 'custom_field4', 'email', 'shipping_address', 'position', 'city_id']);
+                'name', 'tax_number', 'pay_term_number', 'pay_term_type', 'mobile', 'landline', 'alternate_number', 'city', 'state', 'country', 'landmark', 'customer_group_id', 'contact_id', 'custom_field1', 'custom_field2', 'custom_field3', 'custom_field4', 'email', 'shipping_address', 'position', 'city_id']);
             $input['business_id'] = $business_id;
             $input['created_by'] = $request->session()->get('user.id');
 
@@ -940,9 +940,9 @@ public function postImportContacts(Request $request)
             DB::beginTransaction();
             foreach ($imported_data as $key => $value) {
                     //Check if 21 no. of columns exists
-                if (count($value) != 21) {
+                if (count($value) != 30) {
                     $is_valid =  false;
-                    $error_msg = "Number of columns mismatch";
+                    $error_msg = "Número de colunas incompatíveis";
                     break;
                 }
 
@@ -962,12 +962,12 @@ public function postImportContacts(Request $request)
                         $contact_array['type'] = $contact_types[$contact_type];
                     } else {
                         $is_valid =  false;
-                        $error_msg = "Invalid contact type in row no. $row_no";
+                        $error_msg = "Tipo de contato inválido na linha $row_no";
                         break;
                     }
                 } else {
                     $is_valid =  false;
-                    $error_msg = "Contact type is required in row no. $row_no";
+                    $error_msg = "O tipo de contato é obrigatório na linha $row_no";
                     break;
                 }
 
@@ -976,7 +976,7 @@ public function postImportContacts(Request $request)
                     $contact_array['name'] = $value[1];
                 } else {
                     $is_valid =  false;
-                    $error_msg = "Contact name is required in row no. $row_no";
+                    $error_msg = "O nome do contato é obrigatório na linha $row_no";
                     break;
                 }
 
@@ -987,7 +987,7 @@ public function postImportContacts(Request $request)
                         $contact_array['supplier_business_name'] = $value[2];
                     } else {
                         $is_valid =  false;
-                        $error_msg = "Business name is required in row no. $row_no";
+                        $error_msg = "O nome da empresa é obrigatório na linha $row_no";
                         break;
                     }
 
@@ -996,7 +996,7 @@ public function postImportContacts(Request $request)
                         $contact_array['pay_term_number'] = trim($value[6]);
                     } else {
                         $is_valid =  false;
-                        $error_msg = "Pay term is required in row no. $row_no";
+                        $error_msg = "O prazo de pagamento é exigido na linha $row_no";
                         break;
                     }
 
@@ -1006,7 +1006,7 @@ public function postImportContacts(Request $request)
                         $contact_array['pay_term_type'] = $pay_term_type;
                     } else {
                         $is_valid =  false;
-                        $error_msg = "Pay term period is required in row no. $row_no";
+                        $error_msg = "O período de prazo de pagamento é exigido na linha $row_no";
                         break;
                     }
                 }
@@ -1022,7 +1022,7 @@ public function postImportContacts(Request $request)
                         $contact_array['contact_id'] = $value[3];
                     } else {
                         $is_valid =  false;
-                        $error_msg = "Contact ID already exists in row no. $row_no";
+                        $error_msg = "O ID do contato já existe na linha $row_no";
                         break;
                     }
                 }
@@ -1048,7 +1048,7 @@ public function postImportContacts(Request $request)
                         $contact_array['email'] = $value[9];
                     } else {
                         $is_valid =  false;
-                        $error_msg = "Invalid email id in row no. $row_no";
+                        $error_msg = "ID de e-mail inválido na linha $row_no";
                         break;
                     }
                 }
@@ -1057,10 +1057,79 @@ public function postImportContacts(Request $request)
                 if (!empty(trim($value[10]))) {
                     $contact_array['mobile'] = $value[10];
                 } else {
+                    $contact_array['mobile'] = '';
+                }
+
+                if (!empty(trim($value[21]))) {
+                    $contact_array['cpf_cnpj'] = $value[21];
+                } else {
                     $is_valid =  false;
-                    $error_msg = "Mobile number is required in row no. $row_no";
+                    $error_msg = "CPF/CNPJ é obrigatório na linha $row_no";
                     break;
                 }
+
+                if (!empty(trim($value[22]))) {
+                    $contact_array['ie_rg'] = $value[22];
+                } else {
+                    $contact_array['ie_rg'] = '';
+                }
+
+                if (!empty(trim($value[23]))) {
+                    $contact_array['city_id'] = $value[23];
+                } else {
+                    $is_valid =  false;
+                    $error_msg = "Cidade ID é obrigatório na linha $row_no";
+                    break;
+                }
+
+                if (!empty(trim($value[24]))) {
+                    $contact_array['consumidor_final'] = $value[24];
+                } else {
+                    $is_valid =  false;
+                    $error_msg = "Consumidor final é obrigatório na linha $row_no";
+                    break;
+                }
+
+                if (!empty(trim($value[25]))) {
+                    $contact_array['contribuinte'] = $value[25];
+                } else {
+                    $is_valid =  false;
+                    $error_msg = "Contribuinte é obrigatório na linha $row_no";
+                    break;
+                }
+
+                if (!empty(trim($value[26]))) {
+                    $contact_array['rua'] = $value[26];
+                } else {
+                    $is_valid =  false;
+                    $error_msg = "Rua é obrigatório na linha $row_no";
+                    break;
+                }
+
+                if (!empty(trim($value[27]))) {
+                    $contact_array['numero'] = $value[27];
+                } else {
+                    $is_valid =  false;
+                    $error_msg = "Número é obrigatório na linha $row_no";
+                    break;
+                }
+
+                if (!empty(trim($value[28]))) {
+                    $contact_array['bairro'] = $value[28];
+                } else {
+                    $is_valid =  false;
+                    $error_msg = "Bairro é obrigatório na linha $row_no";
+                    break;
+                }
+
+                if (!empty(trim($value[29]))) {
+                    $contact_array['cep'] = $value[29];
+                } else {
+                    $is_valid =  false;
+                    $error_msg = "CEP é obrigatório na linha $row_no";
+                    break;
+                }
+
 
                     //Alt contact number
                 $contact_array['alternate_number'] = $value[11];
@@ -1117,23 +1186,25 @@ public function postImportContacts(Request $request)
                 }
             }
 
-            $output = ['success' => 1,
-            'msg' => __('product.file_imported_successfully')
+            $output = [
+                'success' => 1,
+                'msg' => __('product.file_imported_successfully')
+            ];
+
+            DB::commit();
+        }
+    } catch (\Exception $e) {
+        DB::rollBack();
+        \Log::emergency("File:" . $e->getFile(). "Line:" . $e->getLine(). "Message:" . $e->getMessage());
+
+        $output = [
+            'success' => 0,
+            'msg' => $e->getMessage()
         ];
-
-        DB::commit();
+        return redirect()->route('contacts.import')->with('notification', $output);
     }
-} catch (\Exception $e) {
-    DB::rollBack();
-    \Log::emergency("File:" . $e->getFile(). "Line:" . $e->getLine(). "Message:" . $e->getMessage());
 
-    $output = ['success' => 0,
-    'msg' => $e->getMessage()
-];
-return redirect()->route('contacts.import')->with('notification', $output);
-}
-
-return redirect()->action('ContactController@index', ['type' => 'supplier'])->with('status', $output);
+    return redirect()->action('ContactController@index', ['type' => 'supplier'])->with('status', $output);
 }
 
 /**

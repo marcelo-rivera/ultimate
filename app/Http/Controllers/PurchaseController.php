@@ -268,6 +268,7 @@ return view('purchase.index')
         return view('purchase.create')
         ->with('tipo', '')
         ->with('cities', $this->prepareCities())
+        ->with('estados', $this->prepareUFs())
         ->with(compact('taxes', 'orderStatuses', 'business_locations', 'currency_details', 'default_purchase_status', 'customer_groups', 'types', 'shortcuts', 'payment_line', 'payment_types', 'accounts'));
     }
 
@@ -279,6 +280,40 @@ return view('purchase.index')
             $temp[$c->id] = $c->nome . " ($c->uf)";
         }
         return $temp;
+    }
+
+    private function prepareUFs(){
+        return [
+            "AC"=> "AC",
+            "AL"=> "AL",
+            "AM"=> "AM",
+            "AP"=> "AP",
+            "BA"=> "BA",
+            "CE"=> "CE",
+            "DF"=> "DF",
+            "ES"=> "ES",
+            "GO"=> "GO",
+            "MA"=> "MA",
+            "MG"=> "MG",
+            "MS" => "MS",
+            "MT" => "MT",
+            "PA" => "PA",
+            "PB" => "PB",
+            "PE" => "PE",
+            "PI" => "PI",
+            "PR" => "PR",
+            "RJ" => "RJ",
+            "RN" => "RN",
+            "RS" => "RS",
+            "RO" => "RO",
+            "RR" => "RR",
+            "SC" => "SC",
+            "SE" => "SE",
+            "SP" => "SP",
+            "TO" => "TO"
+
+        ];
+
     }
 
     /**
@@ -380,20 +415,23 @@ return view('purchase.index')
             
             DB::commit();
             
-            $output = ['success' => 1,
-            'msg' => __('purchase.purchase_add_success')
-        ];
-    } catch (\Exception $e) {
-        DB::rollBack();
-        \Log::emergency("File:" . $e->getFile(). "Line:" . $e->getLine(). "Message:" . $e->getMessage());
+            $output = [
+                'success' => 1,
+                'msg' => __('purchase.purchase_add_success'
+            )
+            ];
+        } catch (\Exception $e) {
+            DB::rollBack();
+            \Log::emergency("File:" . $e->getFile(). "Line:" . $e->getLine(). "Message:" . $e->getMessage());
 
-        $output = ['success' => 0,
-        'msg' => __('messages.something_went_wrong')
-    ];
-}
+            $output = [
+                'success' => 0,
+                'msg' => __('messages.something_went_wrong')
+            ];
+        }
 
-return redirect('purchases')->with('status', $output);
-}
+        return redirect('purchases')->with('status', $output);
+    }
 
     /**
      * Display the specified resource.

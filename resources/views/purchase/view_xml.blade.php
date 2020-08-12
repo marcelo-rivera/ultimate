@@ -81,9 +81,10 @@
 		<div class="col-sm-12">
 			<div class="form-group">
 				<h3 class="box-title">Produtos</h3>
+
+
 				<div class="">
 					
-
 					<!-- Inicio tabela -->
 					<div class="nav-tabs-custom">
 
@@ -129,7 +130,14 @@
 												</tbody>
 											</table>
 
-
+											<div class="row">
+												<div class="col-sm-3">
+													<div class="form-group">
+														{!! Form::label('perc_venda', '% de acrescimo para valor de venda' . ':') !!}
+														{!! Form::text('perc_venda', 10.00, ['id' => 'perc_venda', 'class' => 'form-control']); !!}
+													</div>
+												</div>
+											</div>
 										</div>
 
 									</div>
@@ -149,7 +157,9 @@
 			<div class="form-group">
 				<h3 class="box-title">Fatura</h3>
 				<div class="">
-
+					@if(sizeof($fatura) > 0)
+					<p class="text-danger">Está fatura será incluida em despesas!</p>
+					@endif
 					<div class="nav-tabs-custom">
 
 
@@ -172,6 +182,7 @@
 												<tbody>
 
 													@if(sizeof($fatura) > 0)
+
 													@foreach($fatura as $f)
 
 													<tr>
@@ -218,7 +229,18 @@
 
 	@endcomponent
 	{!! Form::close() !!}
+
+	
 </section>
+
+@section('javascript')
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.mask/1.14.11/jquery.mask.min.js"></script>
+<script type="text/javascript">
+	$('#perc_venda').mask('000.00')
+</script>
+@endsection
+
+
 <!-- /.content -->
 
 @endsection

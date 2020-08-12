@@ -47,39 +47,39 @@ class ExpenseController extends Controller
             $business_id = request()->session()->get('user.business_id');
 
             $expenses = Transaction::leftJoin('expense_categories AS ec', 'transactions.expense_category_id', '=', 'ec.id')
-                        ->join(
-                            'business_locations AS bl',
-                            'transactions.location_id',
-                            '=',
-                            'bl.id'
-                        )
-                        ->leftJoin('tax_rates as tr', 'transactions.tax_id', '=', 'tr.id')
-                        ->leftJoin('users AS U', 'transactions.expense_for', '=', 'U.id')
-                        ->leftJoin('users AS usr', 'transactions.created_by', '=', 'usr.id')
-                        ->leftJoin(
-                            'transaction_payments AS TP',
-                            'transactions.id',
-                            '=',
-                            'TP.transaction_id'
-                        )
-                        ->where('transactions.business_id', $business_id)
-                        ->where('transactions.type', 'expense')
-                        ->select(
-                            'transactions.id',
-                            'transactions.document',
-                            'transaction_date',
-                            'ref_no',
-                            'ec.name as category',
-                            'payment_status',
-                            'additional_notes',
-                            'final_total',
-                            'bl.name as location_name',
-                            DB::raw("CONCAT(COALESCE(U.surname, ''),' ',COALESCE(U.first_name, ''),' ',COALESCE(U.last_name,'')) as expense_for"),
-                            DB::raw("CONCAT(tr.name ,' (', tr.amount ,' )') as tax"),
-                            DB::raw('SUM(TP.amount) as amount_paid'),
-                            DB::raw("CONCAT(COALESCE(usr.surname, ''),' ',COALESCE(usr.first_name, ''),' ',COALESCE(usr.last_name,'')) as added_by")
-                        )
-                        ->groupBy('transactions.id');
+            ->join(
+                'business_locations AS bl',
+                'transactions.location_id',
+                '=',
+                'bl.id'
+            )
+            ->leftJoin('tax_rates as tr', 'transactions.tax_id', '=', 'tr.id')
+            ->leftJoin('users AS U', 'transactions.expense_for', '=', 'U.id')
+            ->leftJoin('users AS usr', 'transactions.created_by', '=', 'usr.id')
+            ->leftJoin(
+                'transaction_payments AS TP',
+                'transactions.id',
+                '=',
+                'TP.transaction_id'
+            )
+            ->where('transactions.business_id', $business_id)
+            ->where('transactions.type', 'expense')
+            ->select(
+                'transactions.id',
+                'transactions.document',
+                'transaction_date',
+                'ref_no',
+                'ec.name as category',
+                'payment_status',
+                'additional_notes',
+                'final_total',
+                'bl.name as location_name',
+                DB::raw("CONCAT(COALESCE(U.surname, ''),' ',COALESCE(U.first_name, ''),' ',COALESCE(U.last_name,'')) as expense_for"),
+                DB::raw("CONCAT(tr.name ,' (', tr.amount ,' )') as tax"),
+                DB::raw('SUM(TP.amount) as amount_paid'),
+                DB::raw("CONCAT(COALESCE(usr.surname, ''),' ',COALESCE(usr.first_name, ''),' ',COALESCE(usr.last_name,'')) as added_by")
+            )
+            ->groupBy('transactions.id');
 
             //Add condition for expense for,used in sales representative expense report & list of expense
             if (request()->has('expense_for')) {
@@ -110,7 +110,7 @@ class ExpenseController extends Controller
                 $start = request()->start_date;
                 $end =  request()->end_date;
                 $expenses->whereDate('transaction_date', '>=', $start)
-                        ->whereDate('transaction_date', '<=', $end);
+                ->whereDate('transaction_date', '<=', $end);
             }
 
             //Add condition for expense category, used in list of expense,
@@ -140,61 +140,61 @@ class ExpenseController extends Controller
             }
             
             return Datatables::of($expenses)
-                ->addColumn(
-                    'action',
-                    '<div class="btn-group">
-                        <button type="button" class="btn btn-info dropdown-toggle btn-xs" 
-                            data-toggle="dropdown" aria-expanded="false"> @lang("messages.actions")<span class="caret"></span><span class="sr-only">Toggle Dropdown
-                                </span>
-                        </button>
-                    <ul class="dropdown-menu dropdown-menu-left" role="menu">
-                    <li><a href="{{action(\'ExpenseController@edit\', [$id])}}"><i class="glyphicon glyphicon-edit"></i> @lang("messages.edit")</a></li>
-                    @if($document)
-                        <li><a href="{{ url(\'uploads/documents/\' . $document)}}" 
-                        download=""><i class="fa fa-download" aria-hidden="true"></i> @lang("purchase.download_document")</a></li>
-                        @if(isFileImage($document))
-                            <li><a href="#" data-href="{{ url(\'uploads/documents/\' . $document)}}" class="view_uploaded_document"><i class="fa fa-picture-o" aria-hidden="true"></i>@lang("lang_v1.view_document")</a></li>
-                        @endif
-                    @endif
-                    <li>
-                        <a data-href="{{action(\'ExpenseController@destroy\', [$id])}}" class="delete_expense"><i class="glyphicon glyphicon-trash"></i> @lang("messages.delete")</a></li>
-                    <li class="divider"></li> 
-                    @if($payment_status != "paid")
-                        <li><a href="{{action("TransactionPaymentController@addPayment", [$id])}}" class="add_payment_modal"><i class="fas fa-money-bill-alt" aria-hidden="true"></i> @lang("purchase.add_payment")</a></li>
-                    @endif
-                    <li><a href="{{action("TransactionPaymentController@show", [$id])}}" class="view_payment_modal"><i class="fas fa-money-bill-alt" aria-hidden="true" ></i> @lang("purchase.view_payments")</a></li>
-                    </ul></div>'
-                )
-                ->removeColumn('id')
-                ->editColumn(
-                    'final_total',
-                    '<span class="display_currency final-total" data-currency_symbol="true" data-orig-value="{{$final_total}}">{{$final_total}}</span>'
-                )
-                ->editColumn('transaction_date', '{{@format_datetime($transaction_date)}}')
-                ->editColumn(
-                    'payment_status',
-                    '<a href="{{ action("TransactionPaymentController@show", [$id])}}" class="view_payment_modal payment-status no-print" data-orig-value="{{$payment_status}}" data-status-name="{{__(\'lang_v1.\' . $payment_status)}}"><span class="label @payment_status($payment_status)">{{__(\'lang_v1.\' . $payment_status)}}
-                        </span></a><span class="print_section">{{__(\'lang_v1.\' . $payment_status)}}</span>'
-                )
-                ->addColumn('payment_due', function ($row) {
-                    $due = $row->final_total - $row->amount_paid;
-                    return '<span class="display_currency payment_due" data-currency_symbol="true" data-orig-value="' . $due . '">' . $due . '</span>';
-                })
-                ->rawColumns(['final_total', 'action', 'payment_status', 'payment_due'])
-                ->make(true);
+            ->addColumn(
+                'action',
+                '<div class="btn-group">
+                <button type="button" class="btn btn-info dropdown-toggle btn-xs" 
+                data-toggle="dropdown" aria-expanded="false"> @lang("messages.actions")<span class="caret"></span><span class="sr-only">Toggle Dropdown
+                </span>
+                </button>
+                <ul class="dropdown-menu dropdown-menu-left" role="menu">
+                <li><a href="{{action(\'ExpenseController@edit\', [$id])}}"><i class="glyphicon glyphicon-edit"></i> @lang("messages.edit")</a></li>
+                @if($document)
+                <li><a href="{{ url(\'uploads/documents/\' . $document)}}" 
+                download=""><i class="fa fa-download" aria-hidden="true"></i> @lang("purchase.download_document")</a></li>
+                @if(isFileImage($document))
+                <li><a href="#" data-href="{{ url(\'uploads/documents/\' . $document)}}" class="view_uploaded_document"><i class="fa fa-picture-o" aria-hidden="true"></i>@lang("lang_v1.view_document")</a></li>
+                @endif
+                @endif
+                <li>
+                <a data-href="{{action(\'ExpenseController@destroy\', [$id])}}" class="delete_expense"><i class="glyphicon glyphicon-trash"></i> @lang("messages.delete")</a></li>
+                <li class="divider"></li> 
+                @if($payment_status != "paid")
+                <li><a href="{{action("TransactionPaymentController@addPayment", [$id])}}" class="add_payment_modal"><i class="fas fa-money-bill-alt" aria-hidden="true"></i> @lang("purchase.add_payment")</a></li>
+                @endif
+                <li><a href="{{action("TransactionPaymentController@show", [$id])}}" class="view_payment_modal"><i class="fas fa-money-bill-alt" aria-hidden="true" ></i> @lang("purchase.view_payments")</a></li>
+                </ul></div>'
+            )
+            ->removeColumn('id')
+            ->editColumn(
+                'final_total',
+                '<span class="display_currency final-total" data-currency_symbol="true" data-orig-value="{{$final_total}}">{{$final_total}}</span>'
+            )
+            ->editColumn('transaction_date', '{{@format_datetime($transaction_date)}}')
+            ->editColumn(
+                'payment_status',
+                '<a href="{{ action("TransactionPaymentController@show", [$id])}}" class="view_payment_modal payment-status no-print" data-orig-value="{{$payment_status}}" data-status-name="{{__(\'lang_v1.\' . $payment_status)}}"><span class="label @payment_status($payment_status)">{{__(\'lang_v1.\' . $payment_status)}}
+                </span></a><span class="print_section">{{__(\'lang_v1.\' . $payment_status)}}</span>'
+            )
+            ->addColumn('payment_due', function ($row) {
+                $due = $row->final_total - $row->amount_paid;
+                return '<span class="display_currency payment_due" data-currency_symbol="true" data-orig-value="' . $due . '">' . $due . '</span>';
+            })
+            ->rawColumns(['final_total', 'action', 'payment_status', 'payment_due'])
+            ->make(true);
         }
 
         $business_id = request()->session()->get('user.business_id');
 
         $categories = ExpenseCategory::where('business_id', $business_id)
-                            ->pluck('name', 'id');
+        ->pluck('name', 'id');
 
         $users = User::forDropdown($business_id, false, true, true);
 
         $business_locations = BusinessLocation::forDropdown($business_id, true);
 
         return view('expense.index')
-            ->with(compact('categories', 'business_locations', 'users'));
+        ->with(compact('categories', 'business_locations', 'users'));
     }
 
     /**
@@ -218,7 +218,7 @@ class ExpenseController extends Controller
         $business_locations = BusinessLocation::forDropdown($business_id);
 
         $expense_categories = ExpenseCategory::where('business_id', $business_id)
-                                ->pluck('name', 'id');
+        ->pluck('name', 'id');
         $users = User::forDropdown($business_id, true, true);
 
         $taxes = TaxRate::forBusinessDropdown($business_id, true, true);
@@ -234,7 +234,7 @@ class ExpenseController extends Controller
         }
 
         return view('expense.create')
-            ->with(compact('expense_categories', 'business_locations', 'users', 'taxes', 'payment_line', 'payment_types', 'accounts'));
+        ->with(compact('expense_categories', 'business_locations', 'users', 'taxes', 'payment_line', 'payment_types', 'accounts'));
     }
 
     /**
@@ -307,17 +307,19 @@ class ExpenseController extends Controller
 
             DB::commit();
 
-            $output = ['success' => 1,
-                            'msg' => __('expense.expense_add_success')
-                        ];
+            $output = [
+                'success' => 1,
+                'msg' => __('expense.expense_add_success')
+            ];
         } catch (\Exception $e) {
             DB::rollBack();
 
             \Log::emergency("File:" . $e->getFile(). "Line:" . $e->getLine(). "Message:" . $e->getMessage());
             
-            $output = ['success' => 0,
-                            'msg' => __('messages.something_went_wrong')
-                        ];
+            $output = [
+                'success' => 0,
+                'msg' => __('messages.something_went_wrong')
+            ];
         }
 
         return redirect('expenses')->with('status', $output);
@@ -356,17 +358,17 @@ class ExpenseController extends Controller
         $business_locations = BusinessLocation::forDropdown($business_id);
 
         $expense_categories = ExpenseCategory::where('business_id', $business_id)
-                                ->pluck('name', 'id');
+        ->pluck('name', 'id');
         $expense = Transaction::where('business_id', $business_id)
-                                ->where('id', $id)
-                                ->first();
+        ->where('id', $id)
+        ->first();
 
         $users = User::forDropdown($business_id, true, true);
 
         $taxes = TaxRate::forBusinessDropdown($business_id, true, true);
 
         return view('expense.edit')
-            ->with(compact('expense', 'expense_categories', 'business_locations', 'users', 'taxes'));
+        ->with(compact('expense', 'expense_categories', 'business_locations', 'users', 'taxes'));
     }
 
     /**
@@ -396,7 +398,7 @@ class ExpenseController extends Controller
             if (!$this->moduleUtil->isSubscribed($business_id)) {
                 return $this->moduleUtil->expiredResponse(action('ExpenseController@index'));
             }
-        
+
             $transaction_data['transaction_date'] = $this->transactionUtil->uf_date($transaction_data['transaction_date'], true);
             $transaction_data['final_total'] = $this->transactionUtil->num_uf(
                 $transaction_data['final_total']
@@ -416,22 +418,22 @@ class ExpenseController extends Controller
             }
 
             $transaction = Transaction::where('business_id', $business_id)
-                                ->where('id', $id)
-                                ->update($transaction_data);
+            ->where('id', $id)
+            ->update($transaction_data);
 
             $output = ['success' => 1,
-                            'msg' => __('expense.expense_update_success')
-                        ];
-        } catch (\Exception $e) {
-            \Log::emergency("File:" . $e->getFile(). "Line:" . $e->getLine(). "Message:" . $e->getMessage());
-            
-            $output = ['success' => 0,
-                            'msg' => __('messages.something_went_wrong')
-                        ];
-        }
+            'msg' => __('expense.expense_update_success')
+        ];
+    } catch (\Exception $e) {
+        \Log::emergency("File:" . $e->getFile(). "Line:" . $e->getLine(). "Message:" . $e->getMessage());
 
-        return redirect('expenses')->with('status', $output);
-    }
+        $output = ['success' => 0,
+        'msg' => __('messages.something_went_wrong')
+    ];
+}
+
+return redirect('expenses')->with('status', $output);
+}
 
     /**
      * Remove the specified resource from storage.
@@ -450,26 +452,26 @@ class ExpenseController extends Controller
                 $business_id = request()->session()->get('user.business_id');
 
                 $expense = Transaction::where('business_id', $business_id)
-                                        ->where('type', 'expense')
-                                        ->where('id', $id)
-                                        ->first();
+                ->where('type', 'expense')
+                ->where('id', $id)
+                ->first();
                 $expense->delete();
 
                 //Delete account transactions
                 AccountTransaction::where('transaction_id', $expense->id)->delete();
 
                 $output = ['success' => true,
-                            'msg' => __("expense.expense_delete_success")
-                            ];
-            } catch (\Exception $e) {
-                \Log::emergency("File:" . $e->getFile(). "Line:" . $e->getLine(). "Message:" . $e->getMessage());
+                'msg' => __("expense.expense_delete_success")
+            ];
+        } catch (\Exception $e) {
+            \Log::emergency("File:" . $e->getFile(). "Line:" . $e->getLine(). "Message:" . $e->getMessage());
             
-                $output = ['success' => false,
-                            'msg' => __("messages.something_went_wrong")
-                        ];
-            }
-
-            return $output;
-        }
+            $output = ['success' => false,
+            'msg' => __("messages.something_went_wrong")
+        ];
     }
+
+    return $output;
+}
+}
 }

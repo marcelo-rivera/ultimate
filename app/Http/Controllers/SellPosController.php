@@ -207,6 +207,7 @@ class SellPosController extends Controller
 
         return view('sale_pos.create')
         ->with('cities', $this->prepareCities())
+        ->with('estados', $this->prepareUFs())
         ->with('tipo', 'customer')
         
         ->with(compact(
@@ -245,6 +246,40 @@ class SellPosController extends Controller
             $temp[$c->id] = $c->nome . " ($c->uf)";
         }
         return $temp;
+    }
+
+    private function prepareUFs(){
+        return [
+            "AC"=> "AC",
+            "AL"=> "AL",
+            "AM"=> "AM",
+            "AP"=> "AP",
+            "BA"=> "BA",
+            "CE"=> "CE",
+            "DF"=> "DF",
+            "ES"=> "ES",
+            "GO"=> "GO",
+            "MA"=> "MA",
+            "MG"=> "MG",
+            "MS" => "MS",
+            "MT" => "MT",
+            "PA" => "PA",
+            "PB" => "PB",
+            "PE" => "PE",
+            "PI" => "PI",
+            "PR" => "PR",
+            "RJ" => "RJ",
+            "RN" => "RN",
+            "RS" => "RS",
+            "RO" => "RO",
+            "RR" => "RR",
+            "SC" => "SC",
+            "SE" => "SE",
+            "SP" => "SP",
+            "TO" => "TO"
+
+        ];
+
     }
 
     /**
@@ -508,57 +543,59 @@ class SellPosController extends Controller
             $business_details = $this->businessUtil->getDetails($business_id);
             $pos_settings = empty($business_details->pos_settings) ? $this->businessUtil->defaultPosSettings() : json_decode($business_details->pos_settings, true);
 
-            $business = ['id' => $business_id,
-            'accounting_method' => $request->session()->get('business.accounting_method'),
-            'location_id' => $input['location_id'],
-            'pos_settings' => $pos_settings
-        ];
-        $this->transactionUtil->mapPurchaseSell($business, $transaction->sell_lines, 'purchase');
+            $business = [
+                'id' => $business_id,
+                'accounting_method' => $request->session()->get('business.accounting_method'),
+                'location_id' => $input['location_id'],
+                'pos_settings' => $pos_settings
+            ];
+            $this->transactionUtil->mapPurchaseSell($business, $transaction->sell_lines, 'purchase');
 
                     //Auto send notification
-        $this->notificationUtil->autoSendNotification($business_id, 'new_sale', $transaction, $transaction->contact);
-    }
+            $this->notificationUtil->autoSendNotification($business_id, 'new_sale', $transaction, $transaction->contact);
+        }
 
                 //Set Module fields
-    if (!empty($input['has_module_data'])) {
-        $this->moduleUtil->getModuleData('after_sale_saved', ['transaction' => $transaction, 'input' => $input]);
-    }
-
-    Media::uploadMedia($business_id, $transaction, $request, 'documents');
-    
-    DB::commit();
-
-    if ($request->input('is_save_and_print') == 1) {
-        $url = $this->transactionUtil->getInvoiceUrl($transaction->id, $business_id);
-        return redirect()->to($url . '?print_on_load=true');
-    }
-
-    $msg = '';
-    $receipt = '';
-    $invoice_layout_id = $request->input('invoice_layout_id');
-    if ($input['status'] == 'draft' && $input['is_quotation'] == 0) {
-        $msg = trans("sale.draft_added");
-    } elseif ($input['status'] == 'draft' && $input['is_quotation'] == 1) {
-        $msg = trans("lang_v1.quotation_added");
-        if (!$is_direct_sale) {
-            $receipt = $this->receiptContent($business_id, $input['location_id'], $transaction->id, null, false, true, $invoice_layout_id);
-        } else {
-            $receipt = '';
+        if (!empty($input['has_module_data'])) {
+            $this->moduleUtil->getModuleData('after_sale_saved', ['transaction' => $transaction, 'input' => $input]);
         }
-    } elseif ($input['status'] == 'final') {
-        $msg = trans("sale.pos_sale_added");
-        if (!$is_direct_sale) {
-            $receipt = $this->receiptContent($business_id, $input['location_id'], $transaction->id, null, false, true, $invoice_layout_id);
-        } else {
-            $receipt = '';
+
+        Media::uploadMedia($business_id, $transaction, $request, 'documents');
+        
+        DB::commit();
+
+        if ($request->input('is_save_and_print') == 1) {
+            $url = $this->transactionUtil->getInvoiceUrl($transaction->id, $business_id);
+            return redirect()->to($url . '?print_on_load=true');
         }
+
+        $msg = '';
+        $receipt = '';
+        $invoice_layout_id = $request->input('invoice_layout_id');
+        if ($input['status'] == 'draft' && $input['is_quotation'] == 0) {
+            $msg = trans("sale.draft_added");
+        } elseif ($input['status'] == 'draft' && $input['is_quotation'] == 1) {
+            $msg = trans("lang_v1.quotation_added");
+            if (!$is_direct_sale) {
+                $receipt = $this->receiptContent($business_id, $input['location_id'], $transaction->id, null, false, true, $invoice_layout_id);
+            } else {
+                $receipt = '';
+            }
+        } elseif ($input['status'] == 'final') {
+            $msg = trans("sale.pos_sale_added");
+            if (!$is_direct_sale) {
+                $receipt = $this->receiptContent($business_id, $input['location_id'], $transaction->id, null, false, true, $invoice_layout_id);
+            } else {
+                $receipt = '';
+            }
+        }
+        $output = ['success' => 1, 'msg' => $msg, 'receipt' => $receipt, 'venda_id' => $transaction->id ];
+    } else {
+        $output = [
+            'success' => 0,
+            'msg' => trans("messages.something_went_wrong")
+        ];
     }
-    $output = ['success' => 1, 'msg' => $msg, 'receipt' => $receipt, 'venda_id' => $transaction->id ];
-} else {
-    $output = ['success' => 0,
-    'msg' => trans("messages.something_went_wrong")
-];
-}
 } catch (\Exception $e) {
     DB::rollBack();
     \Log::emergency("File:" . $e->getFile(). "Line:" . $e->getLine(). "Message:" . $e->getMessage());
@@ -568,9 +605,12 @@ class SellPosController extends Controller
         $msg = $e->getMessage();
     }
 
-    $output = ['success' => 0,
-    'msg' => $msg
-];
+    print_r($msg);
+
+    $output = [
+        'success' => 0,
+        'msg' => $msg
+    ];
 }
 
 if (!$is_direct_sale) {

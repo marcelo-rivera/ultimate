@@ -21,7 +21,7 @@
 
 <div class="modal-header">
   <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-  <h4 class="modal-title">Editar Cliente</h4>
+  <h4 class="modal-title">Editar</h4>
 </div>
 
 <div class="modal-body">
@@ -41,17 +41,17 @@
     </div>
     <div class="col-md-6">
       <div class="form-group">
-        {!! Form::label('name', __('contact.name') . ':*') !!}
+        {!! Form::label('name', 'Razão social' . ':*') !!}
         <div class="input-group">
           <span class="input-group-addon">
             <i class="fa fa-user"></i>
           </span>
-          {!! Form::text('name', $contact->name, ['class' => 'form-control','placeholder' => __('contact.name'), 'required']); !!}
+          {!! Form::text('name', $contact->name, ['class' => 'form-control','placeholder' => 'Razão social', 'required']); !!}
         </div>
       </div>
     </div>
     <div class="clearfix"></div>
-    <div class="col-md-4 supplier_fields">
+    <div class="col-md-4">
       <div class="form-group">
         {!! Form::label('supplier_business_name', __('business.business_name') . ':*') !!}
         <div class="input-group">
@@ -157,14 +157,14 @@
       </div>
     </div>
 
-    <div class="col-md-5 customer_fields">
+    <div class="col-md-4">
       <div class="form-group">
         <label for="product_custom_field2">CNPJ/CPF:</label>
         <input class="form-control" value="{{$contact->cpf_cnpj}}" placeholder="CPF/CNPJ" name="cpf_cnpj" type="text" id="cpf_cnpj">
       </div>
     </div>
 
-    <div class="col-md-4 customer_fields">
+    <div class="col-md-4 ">
       <div class="form-group">
         <label for="product_custom_field2">I.E/RG:</label>
         <input class="form-control" value="{{$contact->ie_rg}}" placeholder="I.E/RG" name="ie_rg" type="number" id="ie_rg">
@@ -184,7 +184,7 @@
       </div>
     </div>
 
-    <div class="col-md-6 customer_fields">
+    <div class="col-md-6">
       <div class="form-group">
         {!! Form::label('city_id', 'Cidade:*') !!}
         {!! Form::select('city_id', $cities, $contact->city_id, ['class' => 'form-control select2', 'required']); !!}
@@ -194,7 +194,7 @@
     <div class="clearfix"></div>
 
 
-    <div class="col-md-2 customer_fields">
+    <div class="col-md-2">
       <div class="form-group">
 
         {!! Form::label('consumidor_final', 'Consumidor final' . ':') !!}
@@ -202,7 +202,7 @@
       </div>
     </div>
 
-    <div class="col-md-2 customer_fields">
+    <div class="col-md-2">
       <div class="form-group">
 
         {!! Form::label('contribuinte', 'Contribuinte' . ':') !!}
@@ -214,27 +214,27 @@
       <hr/>
     </div>
 
-    <div class="col-md-4 customer_fields">
+    <div class="col-md-4 ">
       <div class="form-group">
         <label for="product_custom_field2">Rua*:</label>
         <input class="form-control" value="{{$contact->rua}}" required placeholder="Rua" name="rua" type="text" id="rua">
       </div>
     </div>
-    <div class="col-md-2 customer_fields">
+    <div class="col-md-2 ">
       <div class="form-group">
         <label for="product_custom_field2">Nº*:</label>
         <input class="form-control" value="{{$contact->numero}}" required placeholder="Nº" name="numero" type="text" id="numero">
       </div>
     </div>
 
-    <div class="col-md-3 customer_fields">
+    <div class="col-md-3 ">
       <div class="form-group">
         <label for="product_custom_field2">Bairro*:</label>
         <input class="form-control" value="{{$contact->bairro}}" required placeholder="Bairro" name="bairro" type="text" id="bairro">
       </div>
     </div>
 
-    <div class="col-md-2 customer_fields">
+    <div class="col-md-2 ">
       <div class="form-group">
         <label for="product_custom_field2">CEP*:</label>
         <input class="form-control" value="{{$contact->cep}}" required placeholder="CEP" name="cep" type="text" id="cep">

@@ -316,13 +316,13 @@ if (auth()->user()->can('sell.view') || auth()->user()->can('sell.create') || au
                 );
             }
 
-            if (auth()->user()->can('sell.create')) {
-                $sub->url(
-                    action('ImportSalesController@index'),
-                    __('lang_v1.import_sales'),
-                    ['icon' => 'fa fas fa-file-import', 'active' => request()->segment(1) == 'sells']
-                );
-            }
+            // if (auth()->user()->can('sell.create')) {
+            //     $sub->url(
+            //         action('ImportSalesController@index'),
+            //         __('lang_v1.import_sales'),
+            //         ['icon' => 'fa fas fa-file-import', 'active' => request()->segment(1) == 'sells']
+            //     );
+            // }
 
             $sub->url(
                 '/nfelista',

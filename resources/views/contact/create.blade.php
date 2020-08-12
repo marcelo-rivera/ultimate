@@ -42,24 +42,24 @@ $users = [];
     </div>
     <div class="col-md-6">
       <div class="form-group">
-        {!! Form::label('name', __('contact.name') . ':*') !!}
+        {!! Form::label('name', 'Razão social' . ':*') !!}
         <div class="input-group">
           <span class="input-group-addon">
             <i class="fa fa-user"></i>
           </span>
-          {!! Form::text('name', null, ['id' => 'name', 'class' => 'form-control','placeholder' => __('contact.name'), 'required']); !!}
+          {!! Form::text('name', null, ['id' => 'name', 'class' => 'form-control','placeholder' => 'Razão social', 'required']); !!}
         </div>
       </div>
     </div>
     <div class="clearfix"></div>
-    <div class="col-md-4 supplier_fields">
+    <div class="col-md-4">
       <div class="form-group">
         {!! Form::label('supplier_business_name', __('business.business_name') . ':*') !!}
         <div class="input-group">
           <span class="input-group-addon">
             <i class="fa fa-briefcase"></i>
           </span>
-          {!! Form::text('supplier_business_name', null, ['class' => 'form-control', 'required', 'placeholder' => __('business.business_name')]); !!}
+          {!! Form::text('supplier_business_name', null, ['id' => 'nome_fantasia', 'class' => 'form-control', 'required', 'placeholder' => __('business.business_name')]); !!}
         </div>
       </div>
     </div>
@@ -185,7 +185,7 @@ $users = [];
           <span class="input-group-addon">
             <a onclick="buscaDados()"><i class="fa fa-search"></i></a>
           </span>
-          {!! Form::select('uf', $estados, '', ['id' => 'uf', 'class' => 'form-control']); !!}
+          {!! Form::select('uf', $estados, '', ['id' => 'uf', 'class' => 'form-control select2']); !!}
         </div>
       </div>
     </div>
@@ -243,27 +243,27 @@ $users = [];
       <hr/>
     </div>
 
-    <div class="col-md-4 customer_fields">
+    <div class="col-md-4">
       <div class="form-group">
         <label for="product_custom_field2">Rua*:</label>
         <input class="form-control" required placeholder="Rua" name="rua" type="text" id="rua">
       </div>
     </div>
-    <div class="col-md-2 customer_fields">
+    <div class="col-md-2 ">
       <div class="form-group">
         <label for="product_custom_field2">Nº*:</label>
         <input class="form-control" required placeholder="Nº" name="numero" type="text" id="numero">
       </div>
     </div>
 
-    <div class="col-md-3 customer_fields">
+    <div class="col-md-3 ">
       <div class="form-group">
         <label for="product_custom_field2">Bairro*:</label>
         <input class="form-control" required placeholder="Bairro" name="bairro" type="text" id="bairro">
       </div>
     </div>
 
-    <div class="col-md-2 customer_fields">
+    <div class="col-md-2 ">
       <div class="form-group">
         <label for="product_custom_field2">CEP*:</label>
         <input class="form-control" required placeholder="CEP" name="cep" data-mask="00000-000" type="text" id="cep">
@@ -474,7 +474,7 @@ $users = [];
           
 
           findCidade(info.ender.xMun, (res) => {
-            
+
             if(res){
 
               var $option = $("<option selected></option>").val(res.id).text(res.nome + "(" + res.uf + ")");
@@ -508,6 +508,7 @@ $users = [];
 
 
 </script>
+
 </div><!-- /.modal-content -->
 </div><!-- /.modal-dialog -->
 

@@ -70,7 +70,7 @@
                                 <th>@lang('sale.payment_status')</th>
                                 <th>@lang('product.tax')</th>
                                 <th>@lang('sale.total_amount')</th>
-                                <th>@lang('purchase.payment_due')
+                                <th>Total Pago</th>
                                 <th>@lang('expense.expense_for')</th>
                                 <th>@lang('expense.expense_note')</th>
                                 <th>@lang('lang_v1.added_by')</th>

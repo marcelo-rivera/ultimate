@@ -124,9 +124,9 @@ class ImportProductsController extends Controller
                 foreach ($imported_data as $key => $value) {
 
                     //Check if any column is missing
-                    if (count($value) < 36) {
+                    if (count($value) < 48) {
                         $is_valid =  false;
-                        $error_msg = "Some of the columns are missing. Please, use latest CSV file template.";
+                        $error_msg = "Algumas das colunas estão faltando. Por favor, use o modelo de arquivo CSV mais recente.";
                         break;
                     }
 
@@ -141,7 +141,7 @@ class ImportProductsController extends Controller
                         $product_array['name'] = $product_name;
                     } else {
                         $is_valid =  false;
-                        $error_msg = "Product name is required in row no. $row_no";
+                        $error_msg = "O campo nome é obrigatório, linha: $row_no";
                         break;
                     }
                     
@@ -152,6 +152,105 @@ class ImportProductsController extends Controller
                     } else {
                         $product_array['image'] = '';
                     }
+
+
+
+
+                    $perc_icms = trim($value[36]);
+                    if (!empty($perc_icms)) {
+                        $product_array['perc_icms'] = $perc_icms;
+                    } else {
+                        $product_array['perc_icms'] = 0;
+                    }
+
+                    $perc_pis = trim($value[37]);
+                    if (!empty($perc_pis)) {
+                        $product_array['perc_pis'] = $perc_pis;
+                    } else {
+                        $product_array['perc_pis'] = 0;
+                    }
+
+
+                    $perc_cofins = trim($value[38]);
+                    if (!empty($perc_cofins)) {
+                        $product_array['perc_cofins'] = $perc_cofins;
+                    } else {
+                        $product_array['perc_cofins'] = 0;
+                    }
+
+                    $perc_ipi = trim($value[39]);
+                    if (!empty($perc_ipi)) {
+                        $product_array['perc_ipi'] = $perc_ipi;
+                    } else {
+                        $product_array['perc_ipi'] = 0;
+                    }
+
+                    $cst_csosn = trim($value[40]);
+                    if (!empty($cst_csosn)) {
+                        $product_array['cst_csosn'] = $cst_csosn;
+                    } else {
+                        $product_array['cst_csosn'] = '101';
+                    }
+
+                    $cst_pis = trim($value[41]);
+                    if (!empty($cst_csosn)) {
+                        $product_array['cst_pis'] = $cst_pis;
+                    } else {
+                        $product_array['cst_pis'] = '49';
+                    }
+
+                    $cst_cofins = trim($value[42]);
+                    if (!empty($cst_cofins)) {
+                        $product_array['cst_cofins'] = $cst_cofins;
+                    } else {
+                        $product_array['cst_cofins'] = '49';
+                    }
+
+                    $cst_ipi = trim($value[43]);
+                    if (!empty($cst_ipi)) {
+                        $product_array['cst_ipi'] = $cst_ipi;
+                    } else {
+                        $product_array['cst_ipi'] = '99';
+                    }
+
+                    $ncm = trim($value[44]);
+                    if (!empty($ncm)) {
+                        $product_array['ncm'] = $ncm;
+                    } else {
+                        $is_valid =  false;
+                        $error_msg = "NCM é Obrigatório!";
+                        break;
+                    }
+
+                    $cest = trim($value[45]);
+                    if (!empty($cest)) {
+                        $product_array['cest'] = $cest;
+                    } else {
+                        $product_array['cest'] = '';
+                    }
+
+
+                    $cfop_interno = trim($value[46]);
+                    if (!empty($cfop_interno)) {
+                        $product_array['cfop_interno'] = $cfop_interno;
+                    } else {
+                        $is_valid =  false;
+                        $error_msg = "CFOP saida estadual é Obrigatório!";
+                        break;
+                    }
+
+                    $cfop_externo = trim($value[47]);
+                    if (!empty($cfop_externo)) {
+                        $product_array['cfop_externo'] = $cfop_externo;
+                    } else {
+                        $is_valid =  false;
+                        $error_msg = "CFOP saida externo é Obrigatório!";
+                        break;
+                    }
+
+
+
+
 
                     $product_array['product_description'] = isset($value[29]) ? $value[29] : null;
 
@@ -186,7 +285,7 @@ class ImportProductsController extends Controller
                         $product_array['enable_stock'] = $enable_stock;
                     } else {
                         $is_valid =  false;
-                        $error_msg = "Invalid value for MANAGE STOCK in row no. $row_no";
+                        $error_msg = "Valor inválido para estoque, linha: $row_no";
                         break;
                     }
 
@@ -196,7 +295,7 @@ class ImportProductsController extends Controller
                         $product_array['type'] = $product_type;
                     } else {
                         $is_valid =  false;
-                        $error_msg = "Invalid value for PRODUCT TYPE in row no. $row_no";
+                        $error_msg = "Valor inválido para tipo do produto, linha: $row_no";
                         break;
                     }
 
@@ -212,12 +311,12 @@ class ImportProductsController extends Controller
                             $product_array['unit_id'] = $unit->id;
                         } else {
                             $is_valid = false;
-                            $error_msg = "UNIT not found in row no. $row_no";
+                            $error_msg = "Informe unidade para linha: $row_no";
                             break;
                         }
                     } else {
                         $is_valid =  false;
-                        $error_msg = "UNIT is required in row no. $row_no";
+                        $error_msg = "Unidade obrigatória, linha: $row_no";
                         break;
                     }
 
@@ -229,7 +328,7 @@ class ImportProductsController extends Controller
                         $product_array['barcode_type'] = $barcode_type;
                     } else {
                         $is_valid = false;
-                        $error_msg = "Invalid value for BARCODE TYPE in row no. $row_no";
+                        $error_msg = "Código de barras inválido, linha: $row_no";
                         break;
                     }
 
@@ -245,7 +344,7 @@ class ImportProductsController extends Controller
                             $tax_amount = $tax->amount;
                         } else {
                             $is_valid = false;
-                            $error_msg = "Invalid value for APPLICABLE TAX in row no. $row_no";
+                            $error_msg = "Valor inválido para taxa aplicável, linha: $row_no";
                             break;
                         }
                     }
@@ -256,7 +355,7 @@ class ImportProductsController extends Controller
                         $product_array['tax_type'] = $tax_type;
                     } else {
                         $is_valid = false;
-                        $error_msg = "Invalid value for Selling Price Tax Type in row no. $row_no";
+                        $error_msg = "Valor inválido para o tipo de imposto sobre o preço de venda na, linha: $row_no";
                         break;
                     }
 
@@ -308,7 +407,7 @@ class ImportProductsController extends Controller
                         ->exists();
                         if ($is_exist) {
                             $is_valid = false;
-                            $error_msg = "$sku SKU already exist in row no. $row_no";
+                            $error_msg = "$sku já existe este código, linha: $row_no";
                             break;
                         }
                     } else {
@@ -363,7 +462,7 @@ class ImportProductsController extends Controller
                         $dpp_exc_tax = trim($value[17]);
                         if ($dpp_inc_tax == '' && $dpp_exc_tax == '') {
                             $is_valid = false;
-                            $error_msg = "PURCHASE PRICE is required in row no. $row_no";
+                            $error_msg = "Preço de compra é obrigatório, linha: $row_no";
                             break;
                         } else {
                             $dpp_inc_tax = ($dpp_inc_tax != '') ? $dpp_inc_tax : 0;
@@ -395,7 +494,7 @@ class ImportProductsController extends Controller
                                     $product_array['opening_stock_details']['location_id'] = $location->id;
                                 } else {
                                     $is_valid = false;
-                                    $error_msg = "No location with name '$location_name' found in row no. $row_no";
+                                    $error_msg = "Nenhum local com nome '$location_name' encontrado em row no. $row_no";
                                     break;
                                 }
                             } else {
@@ -416,13 +515,13 @@ class ImportProductsController extends Controller
                         $variation_name = trim($value[14]);
                         if (empty($variation_name)) {
                             $is_valid = false;
-                            $error_msg = "VARIATION NAME is required in row no. $row_no";
+                            $error_msg = "O NOME DA VARIAÇÃO é obrigatório, linha: $row_no";
                             break;
                         }
                         $variation_values_string = trim($value[15]);
                         if (empty($variation_values_string)) {
                             $is_valid = false;
-                            $error_msg = "VARIATION VALUES are required in row no. $row_no";
+                            $error_msg = "VALORES DE VARIAÇÃO são necessários, linha: $row_no";
                             break;
                         }
 
@@ -433,7 +532,7 @@ class ImportProductsController extends Controller
 
                         if (empty($dpp_inc_tax_string) && empty($dpp_exc_tax_string)) {
                             $is_valid = false;
-                            $error_msg = "PURCHASE PRICE is required in row no. $row_no";
+                            $error_msg = "Preço de compra é obrigatório, linha: $row_no";
                             break;
                         }
 
@@ -500,7 +599,7 @@ class ImportProductsController extends Controller
 
                         if (count($same) != 1) {
                             $is_valid = false;
-                            $error_msg = "Prices mismatched with VARIATION VALUES in row no. $row_no";
+                            $error_msg = "Preços incompatíveis com VARIATION VALUES na linha $row_no";
                             break;
                         }
                         $product_array['variation']['name'] = $variation_name;
@@ -545,7 +644,7 @@ class ImportProductsController extends Controller
                             //Check if count of variation and opening stock is matching or not.
                             if (count($product_array['variation']['variations']) != count($variation_os)) {
                                 $is_valid = false;
-                                $error_msg = "Opening Stock mismatched with VARIATION VALUES in row no. $row_no";
+                                $error_msg = "Estoque de abertura incompatível com VALORES DE VARIAÇÃO, linha: $row_no";
                                 break;
                             }
 
@@ -556,7 +655,7 @@ class ImportProductsController extends Controller
                                 ->first();
                                 if (empty($location)) {
                                     $is_valid = false;
-                                    $error_msg = "No location with name '$location_name' found in row no. $row_no";
+                                    $error_msg = "Nenhum local com nome '$location_name' encontrado em linha: $row_no";
                                     break;
                                 }
                             } else {

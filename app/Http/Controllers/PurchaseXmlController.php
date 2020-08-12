@@ -14,10 +14,23 @@ use App\ProductVariation;
 use App\VariationLocationDetails;
 use App\PurchaseLine;
 use App\BusinessLocation;
+use App\TransactionPayment;
 
 class PurchaseXmlController extends Controller
 {
 	public function index(){
+		$business_id = request()->session()->get('user.business_id');
+		$business = Business::find($business_id);
+		$erros = [];
+		if($business->cnpj == '00.000.000/0000-00'){
+			$msg = 'Informe a configuração do emitente';
+			array_push($erros, $msg);
+		}
+
+		if(sizeof($erros) > 0){
+			return view('nfe.erros')
+			->with(compact('erros'));
+		}
 
 		if (!auth()->user()->can('user.view') && !auth()->user()->can('user.create')) {
 			abort(403, 'Unauthorized action.');
@@ -158,7 +171,12 @@ class PurchaseXmlController extends Controller
 				->with('dadosNf' , $dadosNf);
 
 			}else{
+				$output = [
+					'success' => 0,
+					'msg' => 'XML já importado na base de dados!!'
+				];
 
+				return back()->with('status', $output);
 			}
 
 		}else{
@@ -261,177 +279,269 @@ class PurchaseXmlController extends Controller
 
 	public function save(Request $request){
 
+		try{
 
-		$business_id = request()->session()->get('user.business_id');
-		$business = Business::find($business_id);
+			$business_id = request()->session()->get('user.business_id');
+			$business = Business::find($business_id);
 
-		$contact = json_decode($request->contact, true);
-		$itens = json_decode($request->itens, true);
-		$fatura = json_decode($request->fatura, true);
-		$dadosNf = json_decode($request->dadosNf, true);
+			$contact = json_decode($request->contact, true);
+			$itens = json_decode($request->itens, true);
+			$fatura = json_decode($request->fatura, true);
+			$dadosNf = json_decode($request->dadosNf, true);
+			$perc_venda = $request->perc_venda;
 
-		$data = [
-			'business_id' => $contact['business_id'],
-			'city_id' => $contact['city_id'],
-			'cpf_cnpj' => $contact['cpf_cnpj'],
-			'ie_rg' => $contact['ie_rg'][0],
-			'consumidor_final' => 1,
-			'contribuinte' => 1,
-			'rua' => $contact['rua'][0],
-			'numero' => $contact['numero'][0],
-			'bairro' => $contact['bairro'][0],
-			'cep' => $contact['cep'][0],
-			'type' => 'supplier',
-			'name' => $contact['name'][0],
-			'mobile' => '',
-			'created_by' => $contact['created_by']
-		];
-
-		$user_id = $request->session()->get('user.id');
-
-		$contact = $this->validaFornecedorCadastrado($data);
-
-		$dataCompra = [
-			'business_id' => $business_id,
-			'type' => 'purchase',
-			'status' => 'final',
-			'payment_status' => 'paid',
-			'contact_id' => $contact->id,
-			'transaction_date' => date('Y-m-d H:i:s'),
-			'created_by' => $user_id,
-			'numero_nfe_entrada' => $dadosNf['nNf'][0],
-			'chave' => $dadosNf['chave'],
-			'estado' => 'APROVADO',
-			'final_total' => $dadosNf['vProd'][0],
-			'discount_amount' => $dadosNf['vDesc'][0],
-			'discount_type' => $dadosNf['vDesc'][0] > 0 ? 'fixed' : NULL
-		];
-
-		$purchase = Transaction::create($dataCompra);
-
-		foreach($itens as $i){
-
-			$unidade = $this->validaUnidadeCadastrada($i['uCom'][0], $user_id);
-
-			$cfop = $i['CFOP'][0];
-			$lastCfop = substr($cfop, 1, 3);
-			$produtoData = [
-				'name' => $i['xProd'][0],
-				'business_id' => $business_id,
-				'unit_id' => $unidade->id,
-				'tax_type' => 'inclusive',
-				'barcode_type' => 'EAN-13',
-				'sku' => $i['codBarras'][0] != 'SEM GTIN' ? $i['codBarras'][0] : $this->lastCodeProduct(),
-				'created_by' => $user_id,
-				'perc_icms' => 0,
-				'perc_pis' => 0,
-				'perc_cofins' => 0,
-				'perc_ipi' => 0,
-				'ncm' => $i['NCM'][0],
-				'cfop_interno' => '5'.$lastCfop,
-				'cfop_externo' => '6'.$lastCfop,
-				'type' => 'single',
-				'enable_stock' => 1,
-
-				'cst_csosn' => $business->cst_csosn_padrao,
-				'cst_pis' => $business->cst_cofins_padrao,
-				'cst_cofins' => $business->cst_pis_padrao,
-				'cst_ipi' => $business->cst_ipi_padrao,
-
+			$data = [
+				'business_id' => $contact['business_id'],
+				'city_id' => $contact['city_id'],
+				'cpf_cnpj' => $contact['cpf_cnpj'],
+				'ie_rg' => $contact['ie_rg'][0],
+				'consumidor_final' => 1,
+				'contribuinte' => 1,
+				'rua' => $contact['rua'][0],
+				'numero' => $contact['numero'][0],
+				'bairro' => $contact['bairro'][0],
+				'cep' => $contact['cep'][0],
+				'type' => 'supplier',
+				'name' => $contact['name'][0],
+				'mobile' => '',
+				'created_by' => $contact['created_by']
 			];
 
+
+			$data = [
+				'business_id' => $contact['business_id'],
+				'city_id' => $contact['city_id'],
+				'cpf_cnpj' => $contact['cpf_cnpj'],
+				'ie_rg' => $contact['ie_rg'][0],
+				'consumidor_final' => 1,
+				'contribuinte' => 1,
+				'rua' => $contact['rua'][0],
+				'numero' => $contact['numero'][0],
+				'bairro' => $contact['bairro'][0],
+				'cep' => $contact['cep'][0],
+				'type' => 'supplier',
+				'name' => $contact['name'][0],
+				'mobile' => '',
+				'created_by' => $contact['created_by']
+			];
+
+			$user_id = $request->session()->get('user.id');
+
+			$contact = $this->validaFornecedorCadastrado($data);
+
+			$dataCompra = [
+				'business_id' => $business_id,
+				'type' => 'purchase',
+				'status' => 'received',
+				'payment_status' => 'due',
+				'contact_id' => $contact->id,
+				'transaction_date' => date('Y-m-d H:i:s'),
+				'created_by' => $user_id,
+				'numero_nfe_entrada' => $dadosNf['nNf'][0],
+				'chave' => $dadosNf['chave'],
+				'estado' => 'APROVADO',
+				'location_id' => $request->location_id,
+				'final_total' => $dadosNf['vProd'][0],
+				'total_before_tax' => $dadosNf['vProd'][0],
+				'discount_amount' => $dadosNf['vDesc'][0],
+				'discount_type' => $dadosNf['vDesc'][0] > 0 ? 'fixed' : NULL
+			];
+
+			$purchase = Transaction::create($dataCompra);
+
+			foreach($itens as $i){
+
+				$unidade = $this->validaUnidadeCadastrada($i['uCom'][0], $user_id);
+
+				$sku = $i['codBarras'][0] != 'SEM GTIN' ? $i['codBarras'][0] : $this->lastCodeProduct();
+
+				$cfop = $i['CFOP'][0];
+				$lastCfop = substr($cfop, 1, 3);
+				$produtoData = [
+					'name' => $i['xProd'][0],
+					'business_id' => $business_id,
+					'unit_id' => $unidade->id,
+					'tax_type' => 'inclusive',
+					'barcode_type' => 'EAN-13',
+					'sku' => $sku,
+					'created_by' => $user_id,
+					'perc_icms' => 0,
+					'perc_pis' => 0,
+					'perc_cofins' => 0,
+					'perc_ipi' => 0,
+					'ncm' => $i['NCM'][0],
+					'cfop_interno' => '5'.$lastCfop,
+					'cfop_externo' => '6'.$lastCfop,
+					'type' => 'single',
+					'enable_stock' => 1,
+
+					'cst_csosn' => $business->cst_csosn_padrao,
+					'cst_pis' => $business->cst_cofins_padrao,
+					'cst_cofins' => $business->cst_pis_padrao,
+					'cst_ipi' => $business->cst_ipi_padrao,
+
+				];
+
 			// print_r($prod);
-			$prodNovo = $this->validaProdutoCadastrado($i['xProd'][0], $i['codBarras'][0]);
-			$prod = null;
-			if($prodNovo == null){
-				$prod = Product::create($produtoData);
-			}else{
-				$prod = $prodNovo;
-			}
+				$prodNovo = $this->validaProdutoCadastrado($i['xProd'][0], $i['codBarras'][0]);
+				$prod = null;
+				if($prodNovo == null){
+					$prod = Product::create($produtoData);
+				}else{
+					$prod = $prodNovo;
+				}
 
 
 			//criar variação de produto
 
 			//verfica variacao
 
-			$dataProductVariation = [
-				'product_id' => $prod->id,
-				'name' => 'DUMMY'
-			];
+				$dataProductVariation = [
+					'product_id' => $prod->id,
+					'name' => 'DUMMY'
+				];
 
-			$variacao = ProductVariation::where('product_id', $prod->id)->where('name', 'DUMMY')->first();
-			$produtoVariacao = null;
-			if($variacao == null){
-				$produtoVariacao = ProductVariation::create($dataProductVariation);
-			}else{
-				$produtoVariacao = $variacao;
-			}
+				$variacao = ProductVariation::where('product_id', $prod->id)->where('name', 'DUMMY')->first();
+				$produtoVariacao = null;
+				if($variacao == null){
+					$produtoVariacao = ProductVariation::create($dataProductVariation);
+				}else{
+					$produtoVariacao = $variacao;
+				}
 
 			// criar variação
 
-			$dataVariation = [
-				'name' => 'DUMMY',
-				'product_id' => $prod->id,
-				'default_purchase_price' => $i['vUnCom'][0],
-				'dpp_inc_tax' => $i['vUnCom'][0],
-				'product_variation_id' => $produtoVariacao->id
-			];
+				$dataVariation = [
+					'name' => 'DUMMY',
+					'product_id' => $prod->id,
+					'sub_sku' => $sku,
+					'default_purchase_price' => $i['vUnCom'][0],
+					'dpp_inc_tax' => $i['vUnCom'][0],
+					'product_variation_id' => $produtoVariacao->id,
+					'profit_percent' => $perc_venda,
+					'default_sell_price' => $i['vUnCom'][0] + (($i['vUnCom'][0] * $perc_venda)/100),
+					'sell_price_inc_tax' => $i['vUnCom'][0] + (($i['vUnCom'][0] * $perc_venda)/100)
+				];
 
-			$var = Variation::where('product_id', $prod->id)->where('name', 'DUMMY')
-			->where('product_variation_id', $produtoVariacao->id)->first();
-			$variacao = null;
-			if($var == null){
-				$variacao = Variation::create($dataVariation);
-			}else{
-				$variacao = $var;
-			}
+				$var = Variation::where('product_id', $prod->id)->where('name', 'DUMMY')
+				->where('product_variation_id', $produtoVariacao->id)->first();
+				$variacao = null;
+				if($var == null){
+					$variacao = Variation::create($dataVariation);
+				}else{
+					$variacao = $var;
+				}
 
 			//criar item compra
-			$dataItemPurchase = [
-				'transaction_id' => $purchase->id,
-				'product_id'=> $prod->id,
-				'variation_id' => $variacao->id,
-				'quantity' => $i['qCom'][0],
-				'purchase_price' => $i['vUnCom'][0]
-			];
+				$dataItemPurchase = [
+					'transaction_id' => $purchase->id,
+					'product_id'=> $prod->id,
+					'variation_id' => $variacao->id,
+					'quantity' => $i['qCom'][0],
+					'pp_without_discount' => $i['vUnCom'][0],
+					'pp_without_discount' => $i['vUnCom'][0],
+					'purchase_price' => $i['vUnCom'][0],
+					'purchase_price_inc_tax' => $i['vUnCom'][0]
+				];
 
-			$item = PurchaseLine::create($dataItemPurchase);
+				$item = PurchaseLine::create($dataItemPurchase);
+
+				\DB::table('product_locations')->insert(
+					[
+						'product_id' => $prod->id,
+						'location_id' => $business_id
+					]
+				);
 
 			//verificaStock
 
-			if($prodNovo == null){
+				if($prodNovo == null){
 				//criar stock
-				$this->openStock($business_id, $prod, $i['vUnCom'][0], $i['qCom'][0], $user_id, $request->location_id, 
-					$variacao->id, $produtoVariacao->id);
+					$this->openStock($business_id, $prod, $i['vUnCom'][0], $i['qCom'][0], $user_id, $request->location_id, 
+						$variacao->id, $produtoVariacao->id);
 				//add estoque
 
-			}else{
-
-				$current_stock = VariationLocationDetails::
-				where('product_id', $prod->id)
-				->where('location_id', $request->location_id)
-				->value('qty_available');
-
-				if($current_stock == null){
-					$this->openStock($business_id, $prod, $i['vUnCom'][0], $i['qCom'][0], $user_id, 
-						$request->location_id, $variacao->id, $produtoVariacao->id);
-
 				}else{
-					$current_stock->qty_available += $i['qCom'][0];
+
+					$current_stock = VariationLocationDetails::
+					where('product_id', $prod->id)
+					->where('location_id', $request->location_id)
+					->first();
+				// ->value('qty_available');
+
+					if($current_stock == null){
+						$this->openStock($business_id, $prod, $i['vUnCom'][0], $i['qCom'][0], $user_id, 
+							$request->location_id, $variacao->id, $produtoVariacao->id);
+
+					}else{
+						$current_stock->qty_available += $i['qCom'][0];
+						$current_stock->save();
+					}
 				}
+
 			}
 
+		//salvar fatura
+			if(sizeof($fatura) > 0){
+
+				foreach($fatura as $f){
+					$vencimento = $f['vencimento'];
+					$vencimento = str_replace("/", "-", $vencimento);
+					$vencimento = \Carbon\Carbon::parse($vencimento)->format('Y-m-d H:i:s');
+
+					$valor = $f['valor_parcela'];
+					$valor = str_replace(",", ".", $valor);
+					$dataFatura = [
+						'business_id' => $business_id,
+						'type' => 'expense',
+						'status' => 'final',
+						'payment_status' => 'due',
+						'contact_id' => $contact->id,
+						'transaction_date' => $vencimento,
+						'created_by' => $user_id,
+						'numero_nfe_entrada' => '',
+						'chave' => '',
+						'estado' => '',
+						'location_id' => $request->location_id,
+						'ref_no' => 'NOTA_' . $dadosNf['nNf'][0],
+						'final_total' => $valor,
+						'total_before_tax' => $valor,
+						'discount_amount' => $dadosNf['vDesc'][0],
+						'discount_type' => $dadosNf['vDesc'][0] > 0 ? 'fixed' : NULL
+					];
+
+					$fatura = Transaction::create($dataFatura);
+				}
+
+			}
+			$output = [
+				'success' => 1,
+				'msg' => 'Comrpa com xml salva com sucesso!!'
+			];
+		}catch(\Exception $e){
+			$output = [
+				'success' => 0,
+				'msg' => __('messages.something_went_wrong')
+			];
+
 		}
+
+		return redirect('purchases')->with('status', $output);
+
 
 	}
 
 	private function lastCodeProduct(){
 		$prod = Product::orderBy('id', 'desc')->first();
-		$v = (int) $prod->sku;
-		if($v<10) return '000' . ($v+1);
-		elseif($v<100) return '00' . ($v+1);
-		elseif($v<1000) return '0'.($v+1);
-		else return $v+1;
+		if($prod == null){
+			return '0001';
+		}else{
+			$v = (int) $prod->sku;
+			if($v<10) return '000' . ($v+1);
+			elseif($v<100) return '00' . ($v+1);
+			elseif($v<1000) return '0'.($v+1);
+			else return $v+1;
+		}
 	}
 
 

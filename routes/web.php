@@ -12,6 +12,15 @@
 */
 
 include_once('install_r.php');
+use App\Transaction;
+
+Route::get('/teste', function () {
+    $t = Transaction::all();
+
+    echo "<pre>";
+    print_r($t);
+    echo "</pre>";
+});
 
 Route::middleware(['authh'])->group(function () {
     Route::get('/', function () {
@@ -439,3 +448,6 @@ Route::middleware(['authh', 'auth', 'SetSessionData', 'language', 'timezone'])->
     Route::get('/sells/{transaction_id}/print', 'SellPosController@printInvoice')->name('sell.printInvoice');
     Route::get('/sells/invoice-url/{id}', 'SellPosController@showInvoiceUrl');
 });
+
+Route::get('/cidades', 'CidadeController@lista');
+

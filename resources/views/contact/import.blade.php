@@ -176,6 +176,61 @@
                         <td>{{ $custom_labels['contact']['custom_field_4'] ?? __('lang_v1.contact_custom_field4') }} <small class="text-muted">(@lang('lang_v1.optional'))</small></td>
                         <td>&nbsp;</td>
                     </tr>
+
+                    <tr>
+                        <td>22</td>
+                        <td>CNPJ/CPF <small class="text-muted">(Obrigatório)</small></td>
+                        <td>&nbsp;</td>
+                    </tr>
+
+                    <tr>
+                        <td>23</td>
+                        <td>IE/RG <small class="text-muted">(Opcional)</small></td>
+                        <td>&nbsp;</td>
+                    </tr>
+
+                    <tr>
+                        <td>23</td>
+                        <td>CIDADE ID <small class="text-muted">(Obrigatório)</small></td>
+                        <td>Código da cidade consulte a lista <a target="_blank" href="/cidades">clique aqui</a> </td>
+                    </tr>
+
+                    <tr>
+                        <td>24</td>
+                        <td>CONSUMIDOR FINAL <small class="text-muted">(Obrigatório)</small></td>
+                        <td>&nbsp;</td>
+                    </tr>
+
+                    <tr>
+                        <td>25</td>
+                        <td>CONTRIBUINTE <small class="text-muted">(Obrigatório)</small></td>
+                        <td>&nbsp;</td>
+                    </tr>
+
+                    <tr>
+                        <td>25</td>
+                        <td>RUA <small class="text-muted">(Obrigatório)</small></td>
+                        <td>&nbsp;</td>
+                    </tr>
+
+                    <tr>
+                        <td>26</td>
+                        <td>NUMERO <small class="text-muted">(Obrigatório)</small></td>
+                        <td>&nbsp;</td>
+                    </tr>
+
+                    <tr>
+                        <td>27</td>
+                        <td>BAIRRO <small class="text-muted">(Obrigatório)</small></td>
+                        <td>&nbsp;</td>
+                    </tr>
+
+                    <tr>
+                        <td>28</td>
+                        <td>CEP <small class="text-muted">(Obrigatório)</small></td>
+                        <td>&nbsp;</td>
+                    </tr>
+
                 </table>
             @endcomponent
         </div>
