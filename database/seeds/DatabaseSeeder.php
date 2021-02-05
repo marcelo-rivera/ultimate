@@ -15,6 +15,7 @@ class DatabaseSeeder extends Seeder
                     PermissionsTableSeeder::class,
                     CurrenciesTableSeeder::class,
                     CitySeeder::class,
+                    CoresTableSeeder::class,
                     // BusinesSeeder::class
                     ]);
 

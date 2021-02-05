@@ -40,7 +40,7 @@ class CreateBusinessTable extends Migration
             $table->string('razao_social', 120)->default('*');
             $table->string('cnpj', 20)->default('00.000.000/0000-00');
             $table->string('ie', 15)->default('00000000000');
-            $table->string('senha_certificado', 10)->default('1234');
+            $table->string('senha_certificado', 100)->default('1234');
             $table->binary('certificado');
 
             $table->integer('cidade_id')->nullable()->unsigned()->default(NULL);
@@ -54,6 +54,8 @@ class CreateBusinessTable extends Migration
 
             $table->integer('ultimo_numero_nfe')->default(0);
             $table->integer('ultimo_numero_nfce')->default(0);
+            $table->integer('ultimo_numero_cte')->default(0);
+            
             $table->integer('numero_serie_nfe')->default(1);
             $table->integer('numero_serie_nfce')->default(1);
             $table->integer('ambiente')->default(2);
@@ -64,9 +66,19 @@ class CreateBusinessTable extends Migration
             $table->integer('cst_pis_padrao')->default('49');
             $table->integer('cst_ipi_padrao')->default('99');
 
+            $table->decimal('perc_icms_padrao', 5, 2)->default(0);
+            $table->decimal('perc_pis_padrao', 5, 2)->default(0);
+            $table->decimal('perc_cofins_padrao', 5, 2)->default(0);
+            $table->decimal('perc_ipi_padrao', 5, 2)->default(0);
+
+            $table->string('ncm_padrao', 12)->default('');
+            $table->string('cfop_saida_estadual_padrao', 4)->default('');
+            $table->string('cfop_saida_inter_estadual_padrao', 4)->default('');
+
+
+
             $table->string('csc', 70)->default('');
             $table->string('csc_id', 10)->default('');
-
 
             $table->timestamps();
         });
