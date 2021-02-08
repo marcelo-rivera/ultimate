@@ -53,6 +53,7 @@ return [
 "select_service_staff" => "Seleccionar personal de servicio",
 "service_staff" => "Personal de servicio",
 "kitchen_for_restaurant" => "Cocina (Para restaurantes)",
+"Estacionamento" => "Empresa de Estacionamento",
 "products_for_modifier" => "Productos para modificador",
 "is_service_staff" => "Es personal de servicio",
 "tooltip_tables" => "Utilizado principalmente en restaurantes, bares, salones, etc.",
